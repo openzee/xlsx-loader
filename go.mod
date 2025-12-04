@@ -1,4 +1,4 @@
-module github.com/openzee/load-excel
+module github.com/openzee/xlsx-loader
 
 go 1.24.0
 
