@@ -12,7 +12,7 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-type Point struct {
+type DiscretePointMetadata struct {
 	Seq          string   `excel:"序号"`
 	BusinessUnit string   `excel:"事业部"`
 	Line         string   `excel:"产线"`
@@ -43,11 +43,11 @@ type Point struct {
 	RowNumber int    `excel:"-"`
 }
 
-func (obj *Point) GetPointPrimaryKey() string {
+func (obj *DiscretePointMetadata) GetPointPrimaryKey() string {
 	return strconv.FormatUint(obj.PointPrimaryKey, 10)
 }
 
-func (obj *Point) String() string {
+func (obj *DiscretePointMetadata) String() string {
 	return fmt.Sprintf("SheetName:%v RowNumber:%v 点位编号:%v 数据源地址:%v 类型:%v IO地址:%v 组ID:%v",
 		obj.SheetName,
 		obj.RowNumber,
@@ -60,21 +60,21 @@ func (obj *Point) String() string {
 }
 
 // 将相同组的点位重新组装
-func ReassembleWithGroupIDAndFreq(pt []*Point) map[uint32]map[time.Duration][]*Point {
+func ReassembleWithGroupIDAndFreq(pt []*DiscretePointMetadata) map[uint32]map[time.Duration][]*DiscretePointMetadata {
 
 	count := 0
-	mapWithGrp := make(map[uint32]map[time.Duration][]*Point)
+	mapWithGrp := make(map[uint32]map[time.Duration][]*DiscretePointMetadata)
 
 	for _, p := range pt {
 		mapWithFreq, ok := mapWithGrp[p.GroupID]
 		if !ok {
-			mapWithFreq = make(map[time.Duration][]*Point)
+			mapWithFreq = make(map[time.Duration][]*DiscretePointMetadata)
 			mapWithGrp[p.GroupID] = mapWithFreq
 		}
 
 		pts, ok := mapWithFreq[p.Frequency]
 		if !ok {
-			pts = make([]*Point, 0)
+			pts = make([]*DiscretePointMetadata, 0)
 			mapWithFreq[p.Frequency] = pts
 		}
 
@@ -91,22 +91,22 @@ func ReassembleWithGroupIDAndFreq(pt []*Point) map[uint32]map[time.Duration][]*P
 }
 
 // 将相同地址和频率的点位重新组装
-func ReassembleWithAddrAndFreq(pt []*Point) map[string]map[time.Duration][]*Point {
+func ReassembleWithAddrAndFreq(pt []*DiscretePointMetadata) map[string]map[time.Duration][]*DiscretePointMetadata {
 
 	count := 0
-	mapWithDataAddr := make(map[string]map[time.Duration][]*Point)
+	mapWithDataAddr := make(map[string]map[time.Duration][]*DiscretePointMetadata)
 
 	for _, p := range pt {
 
 		mapWithFreq, ok := mapWithDataAddr[p.DataSourceAddr]
 		if !ok {
-			mapWithFreq = make(map[time.Duration][]*Point)
+			mapWithFreq = make(map[time.Duration][]*DiscretePointMetadata)
 			mapWithDataAddr[p.DataSourceAddr] = mapWithFreq
 		}
 
 		pts, ok := mapWithFreq[p.Frequency]
 		if !ok {
-			pts = make([]*Point, 0)
+			pts = make([]*DiscretePointMetadata, 0)
 			mapWithFreq[p.Frequency] = pts
 		}
 
@@ -122,13 +122,13 @@ func ReassembleWithAddrAndFreq(pt []*Point) map[string]map[time.Duration][]*Poin
 	return mapWithDataAddr
 }
 
-func ParseExcel(fname string, onlySheets ...string) ([]*Point, error) {
+func ParseExcel(fname string, onlySheets ...string) ([]*DiscretePointMetadata, error) {
 	f, err := excelize.OpenFile(fname)
 	if err != nil {
 		return nil, fmt.Errorf("open file %v fails, err:%v", fname, err)
 	}
 
-	allPoints := []*Point{}
+	allPoints := []*DiscretePointMetadata{}
 
 	sheetList := f.GetSheetList()
 
@@ -175,7 +175,7 @@ func ParseExcel(fname string, onlySheets ...string) ([]*Point, error) {
 				continue
 			}
 
-			var p Point
+			var p DiscretePointMetadata
 			p.SheetName = sheetName
 			p.RowNumber = rowIdx + 2
 

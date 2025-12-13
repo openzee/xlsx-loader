@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Print(allPoints []*Point) {
+func Print(allPoints []*DiscretePointMetadata) {
 
 	for _, p := range allPoints {
 		fmt.Printf("%s\n", p)
